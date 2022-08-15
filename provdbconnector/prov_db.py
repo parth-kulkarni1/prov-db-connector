@@ -562,6 +562,20 @@ class ProvDb(object):
         # get the class types
         from_type_cls = PROV_ATTR_BASE_CLS[from_type]
         to_type_cls = PROV_ATTR_BASE_CLS[to_type]
+        
+        # TODO resolve class into subclass 
+        if from_type_cls == ProvElement:
+            # this means that the relation is sufficiently generic 
+            # to have no specific subtype (entity, activity, agent)
+            # try to resolve the type by determining the actual node in 
+            # the bundle which the relation references
+            None 
+        if from_type_cls == ProvElement:
+            # this means that the relation is sufficiently generic 
+            # to have no specific subtype (entity, activity, agent)
+            # try to resolve the type by determining the actual node in 
+            # the bundle which the relation references
+            None 
 
         if from_type_cls is None or to_type_cls is None:
             raise InvalidArgumentTypeException(

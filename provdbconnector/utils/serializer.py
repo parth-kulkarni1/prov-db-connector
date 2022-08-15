@@ -61,8 +61,10 @@ PROV_ATTR_BASE_CLS = {
     PROV_ATTR_ALTERNATE1: ProvEntity,
     PROV_ATTR_ALTERNATE2: ProvEntity,
     PROV_ATTR_BUNDLE:ProvElement,
-    PROV_ATTR_INFLUENCEE: ProvElement,
-    PROV_ATTR_INFLUENCER: ProvElement,
+    # TODO this is a hotfix - for now only allow prov entity
+    # connections for wasInfluencedBy
+    PROV_ATTR_INFLUENCEE: ProvEntity,
+    PROV_ATTR_INFLUENCER: ProvEntity,
     PROV_ATTR_COLLECTION: ProvEntity
 }
 
