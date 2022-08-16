@@ -538,74 +538,89 @@ class ProvDb(object):
             raise InvalidArgumentTypeException(
                 "prov_relation was {}, expected: {}".format(type(prov_relation), type(ProvRelation)))
 
-
         # get from and to node
         from_tuple, to_tuple = prov_relation.formal_attributes[:2]
         from_qualified_name = from_tuple[1]
         to_qualified_name = to_tuple[1]
 
-        # if target or origin record is unknown, save node "Unknown"
-        if from_qualified_name is None:
-            uid = uuid4()
-            from_qualified_name = prov_relation.bundle.valid_qualified_name("prov:Unknown-{}".format(uid))
-            del uid
+        document: ProvDocument = prov_relation.bundle
 
-        if to_qualified_name is None:
-            uid = uuid4()
-            to_qualified_name = prov_relation.bundle.valid_qualified_name("prov:Unknown-{}".format(uid))
-            del uid
+        from_node_list = document.get_record(identifier=from_qualified_name)
+        if len(from_node_list) > 1:
+            raise RuntimeError("Non unique node identifier")
+        from_node = from_node_list[0]
+
+        to_node_list = document.get_record(identifier=to_qualified_name)
+        if len(to_node_list) > 1:
+            raise RuntimeError("Non unique node identifier")
+        to_node = to_node_list[0]
+
+        # if target or origin record is unknown, save node "Unknown"
+        # if from_qualified_name is None:
+        #    uid = uuid4()
+        #    from_qualified_name = prov_relation.bundle.valid_qualified_name("prov:Unknown-{}".format(uid))
+        #    del uid
+
+        # if to_qualified_name is None:
+        #    uid = uuid4()
+        #    to_qualified_name = prov_relation.bundle.valid_qualified_name("prov:Unknown-{}".format(uid))
+        #    del uid
 
         # Ensure that the from and to node exists
-        relation_cls = PROV_REC_CLS[prov_relation.get_type()]
-        from_type,to_type = relation_cls.FORMAL_ATTRIBUTES[:2]
+        #relation_cls = PROV_REC_CLS[prov_relation.get_type()]
+        #from_type,to_type = relation_cls.FORMAL_ATTRIBUTES[:2]
 
         # get the class types
-        from_type_cls = PROV_ATTR_BASE_CLS[from_type]
-        to_type_cls = PROV_ATTR_BASE_CLS[to_type]
-        
-        # TODO resolve class into subclass 
-        if from_type_cls == ProvElement:
-            # this means that the relation is sufficiently generic 
-            # to have no specific subtype (entity, activity, agent)
-            # try to resolve the type by determining the actual node in 
-            # the bundle which the relation references
-            None 
-        if from_type_cls == ProvElement:
-            # this means that the relation is sufficiently generic 
-            # to have no specific subtype (entity, activity, agent)
-            # try to resolve the type by determining the actual node in 
-            # the bundle which the relation references
-            None 
+        #from_type_cls = PROV_ATTR_BASE_CLS[from_type]
+        #to_type_cls = PROV_ATTR_BASE_CLS[to_type]
 
-        if from_type_cls is None or to_type_cls is None:
-            raise InvalidArgumentTypeException(
-                "Could not determinate typ for relation from: {}, to: {}, prov_relation was {}, ".format(from_type, to_type, type(prov_relation)))
-        #save from and to node
-        self.save_element(prov_element=from_type_cls(prov_relation.bundle, identifier=from_qualified_name), bundle_id=bundle_id)
+        # TODO resolve class into subclass
+        # if from_type_cls == ProvElement:
+        #    # this means that the relation is sufficiently generic
+        #    # to have no specific subtype (entity, activity, agent)
+        #    # try to resolve the type by determining the actual node in
+        #    # the bundle which the relation references
+        #    None
+        # if from_type_cls == ProvElement:
+        #    # this means that the relation is sufficiently generic
+        #    # to have no specific subtype (entity, activity, agent)
+        #    # try to resolve the type by determining the actual node in
+        #    # the bundle which the relation references
+        #    None
+
+        # if from_type_cls is None or to_type_cls is None:
+        #    raise InvalidArgumentTypeException(
+        #        "Could not determinate typ for relation from: {}, to: {}, prov_relation was {}, ".format(from_type, to_type, type(prov_relation)))
+        # save from and to node
+
+        self.save_element(prov_element=from_node, bundle_id=bundle_id)
 
         to_bundle = prov_relation.bundle
 
         # If it is a link between bundle the to node not belongs to the current bundle, the to node belongs only to the bundle defined as FORMAL_ATTR[3]
         if prov_relation.get_type() is PROV_MENTION:
 
-            #Try to get the destination bundle
-            to_bundle_identifier = list(prov_relation.get_attribute(PROV_ATTR_BUNDLE)).pop()
+            # Try to get the destination bundle
+            to_bundle_identifier = list(
+                prov_relation.get_attribute(PROV_ATTR_BUNDLE)).pop()
 
-            if not isinstance(to_bundle_identifier,QualifiedName):
-                raise InvalidProvRecordException("Should be a qualified name {}, mention: {}".format(to_bundle_identifier, prov_relation))
+            if not isinstance(to_bundle_identifier, QualifiedName):
+                raise InvalidProvRecordException("Should be a qualified name {}, mention: {}".format(
+                    to_bundle_identifier, prov_relation))
             # Create the bundle, it will be automatically created during the save_element method
             to_bundle = ProvBundle(identifier=to_bundle_identifier)
 
-
-        self.save_element(prov_element=to_type_cls(to_bundle, identifier=to_qualified_name), bundle_id=bundle_id)
-
+        self.save_element(prov_element=to_node, bundle_id=bundle_id)
 
         # split metadata and attributes
-        (metadata, attributes) = self._get_metadata_and_attributes_for_record(prov_relation)
+        (metadata, attributes) = self._get_metadata_and_attributes_for_record(
+            prov_relation)
 
         # Include namespace uri into the identifier to support e.g. different default namespaces
-        global_from_qualified_name = from_qualified_name.namespace.uri + from_qualified_name.localpart
-        global_to_qualified_name = to_qualified_name.namespace.uri + to_qualified_name.localpart
+        global_from_qualified_name = from_qualified_name.namespace.uri + \
+            from_qualified_name.localpart
+        global_to_qualified_name = to_qualified_name.namespace.uri + \
+            to_qualified_name.localpart
 
         return self._adapter.save_relation(global_from_qualified_name, global_to_qualified_name,
                                            attributes, metadata)
