@@ -34,7 +34,7 @@ class ProvDb(object):
 
     """
 
-    def __init__(self, api_id=None, adapter=None, auth_info=None, *args):
+    def __init__(self, api_id=None, adapter=None, *args):
         """
         Save a new instance of ProvAPI
 
@@ -53,7 +53,7 @@ class ProvDb(object):
         if adapter is None:
             raise NoDataBaseAdapterException()
         self._adapter = adapter()
-        self._adapter.connect(auth_info)
+        self._adapter.connect()
 
     # Converter Methods
     def save_document_from_json(self, content=None):

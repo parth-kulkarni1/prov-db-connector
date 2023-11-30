@@ -1,11 +1,9 @@
-'''
-
 import os
 
 from neo4j.exceptions import ConfigurationError
 from neo4j.graph import Relationship
 
-import provdbconnector.db_adapters.neo4j.cypher_commands as cypher_commands
+import provdbconnector.db_adapters.aws_neptune.cypher_commands as cypher_commands
 from provdbconnector.db_adapters.baseadapter import BaseAdapter
 from provdbconnector.db_adapters.baseadapter import METADATA_KEY_PROV_TYPE, METADATA_KEY_TYPE_MAP, \
     METADATA_KEY_IDENTIFIER, METADATA_KEY_NAMESPACES
@@ -24,19 +22,11 @@ import logging
 logging.getLogger("neo4j.bolt").setLevel(logging.WARN)
 log = logging.getLogger(__name__)
 
-NEO4J_USER = os.environ.get('NEO4J_USERNAME', 'neo4j')
-NEO4J_PASS = os.environ.get('NEO4J_PASSWORD', 'neo4jneo4j')
-NEO4J_HOST = os.environ.get('NEO4J_HOST', 'localhost')
-NEO4J_BOLT_PORT = os.environ.get('NEO4J_BOLT_PORT', '7687')
-NEO4J_HTTP_PORT = os.environ.get('NEO4J_HTTP_PORT', '7474')
-
 NEO4J_META_PREFIX = "meta:"
 
-
-
-class Neo4jAdapter(BaseAdapter):
+class awsNeptuneAdapater(BaseAdapter):
     """
-    This is the neo4j adapter to store prov. data in a neo4j database
+    This is the awsNeptune adapter to store prov data in a awsNeptune database, using the BOLT Protocol.
 
     """
     def __init__(self, *args):
@@ -45,7 +35,7 @@ class Neo4jAdapter(BaseAdapter):
 
         :param args: None
         """
-        super(Neo4jAdapter, self).__init__()
+        super(awsNeptuneAdapater, self).__init__()
         self.driver = None
         pass
 
@@ -63,7 +53,7 @@ class Neo4jAdapter(BaseAdapter):
 
         return session
 
-    def connect(self, authentication_options):
+    def connect(self):
         """
         The connect method to create a new instance of the db_driver
 
@@ -73,8 +63,8 @@ class Neo4jAdapter(BaseAdapter):
         :raises: InvalidOptionsException
         """
         try:
-            uri = "bolt://https://db-neptune-1.cluster-ce3ufhh2vu6y.ap-southeast-2.neptune.amazonaws.com:8182"
-            self.driver = GraphDatabase.driver(uri, encrypted = True, auth=basic_auth("username", "password"))
+            uri = "bolt://db-neptune-1.cluster-ce3ufhh2vu6y.ap-southeast-2.neptune.amazonaws.com:8182"
+            self.driver = GraphDatabase.driver(uri, encrypted = True, auth=basic_auth("username", "password")) # AWS Neptune Ignores the AUTH
 
         except ConfigurationError as e:
             raise InvalidOptionsException(e)
@@ -554,5 +544,3 @@ class Neo4jAdapter(BaseAdapter):
         session = self._create_session()
         session.run(cypher_commands.NEO4J_DELETE_RELATION_BY_ID, {"relation_id": int(relation_id)})
         return True
-
-'''
