@@ -4,7 +4,7 @@ NEO4J_TEST_CONNECTION = """MATCH (n) RETURN count(n) as count"""
 NEO4J_CREATE_DOCUMENT_NODE_RETURN_ID = """
 CREATE (node { }) RETURN ID(node) as ID"""
 NEO4J_CREATE_NODE_SET_PART = "SET node.`{attr_name}` = {{`{attr_name}`}}"
-NEO4J_CREATE_NODE_SET_PART_MERGE_ATTR = "SET node.`{attr_name}` = (CASE WHEN not exists(node.`{attr_name}`) THEN [{{`{attr_name}`}}] ELSE node.`{attr_name}` + {{`{attr_name}`}}  END)"
+NEO4J_CREATE_NODE_SET_PART_MERGE_ATTR = "SET node.`{attr_name}` = {{`{attr_name}`}}"
 NEO4J_CREATE_NODE_MERGE_CHECK_PART = """WITH CASE WHEN check = 0 THEN (CASE  WHEN EXISTS(node.`{attr_name}`) AND node.`{attr_name}` <> {{`{attr_name}`}} THEN 1 ELSE 0 END) ELSE 1 END as check , node"""
 NEO4J_CREATE_NODE_RETURN_ID = """
                                 MERGE (node:{label} {{{formal_attributes}}})
