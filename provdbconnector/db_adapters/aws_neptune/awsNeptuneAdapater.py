@@ -18,6 +18,11 @@ from provdbconnector.utils.serializer import encode_string_value_to_primitive, e
     split_into_formal_and_other_attributes
 
 import logging
+import requests
+import boto3
+from provdbconnector.db_adapters.aws_neptune.python_bolt_helper import NeptuneAuthToken
+from botocore.credentials import Credentials
+
 
 logging.getLogger("neo4j.bolt").setLevel(logging.WARN)
 log = logging.getLogger(__name__)
@@ -53,18 +58,32 @@ class awsNeptuneAdapater(BaseAdapter):
 
         return session
 
-    def connect(self):
+    def connect(self, authentication_options):
         """
         The connect method to create a new instance of the db_driver
 
-        :param authentication_options: Username, password, host and encrypted option
+        :param authentication_options: host, region and encrypted option
         :return: None
         :rtype: None
         :raises: InvalidOptionsException
         """
         try:
-            uri = "bolt://db-neptune-1.cluster-ce3ufhh2vu6y.ap-southeast-2.neptune.amazonaws.com:8182"
-            self.driver = GraphDatabase.driver(uri, encrypted = True, auth=basic_auth("username", "password")) # AWS Neptune Ignores the AUTH
+
+            if authentication_options is None:
+                raise InvalidOptionsException()
+            
+            host = authentication_options.get("host")
+            encrypted = authentication_options.get("encrypted")
+            region = authentication_options.get("region")
+
+
+            if host is None or encrypted is None or region is None:
+                # AWS neptune needs these options to sucessfully work.
+                raise InvalidOptionsException()
+            
+            authToken = NeptuneAuthToken(region = region, url="http://{}".format(host))
+
+            self.driver = GraphDatabase.driver("bolt://{}".format(host), encrypted = encrypted, auth=authToken)
 
         except ConfigurationError as e:
             raise InvalidOptionsException(e)

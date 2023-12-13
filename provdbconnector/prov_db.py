@@ -5,6 +5,7 @@ from collections import namedtuple
 from io import StringIO
 from uuid import uuid4
 
+
 from prov.constants import PROV_ATTRIBUTES, PROV_MENTION, PROV_BUNDLE, PROV_LABEL, PROV_TYPE
 from prov.model import ProvDocument, ProvEntity, ProvBundle, ProvRecord, ProvElement, ProvRelation, QualifiedName, \
     ProvAssociation, PROV_REC_CLS, ProvActivity, ProvAgent, PROV_AGENT,PROV_ENTITY,PROV_ACTIVITY, PROV_ATTR_AGENT,PROV_ATTR_ACTIVITY, PROV_ATTR_ENTITY,PROV_ATTR_BUNDLE
@@ -34,7 +35,7 @@ class ProvDb(object):
 
     """
 
-    def __init__(self, api_id=None, adapter=None, *args):
+    def __init__(self, api_id=None, adapter=None, auth_info = None, *args):
         """
         Save a new instance of ProvAPI
 
@@ -53,7 +54,7 @@ class ProvDb(object):
         if adapter is None:
             raise NoDataBaseAdapterException()
         self._adapter = adapter()
-        self._adapter.connect()
+        self._adapter.connect(auth_info)
 
     # Converter Methods
     def save_document_from_json(self, content=None):
