@@ -42,7 +42,7 @@ class NeptuneAuthToken(Auth):
     print(credentials.access_key, credentials.secert_key, credentials.token)
 
     # Do NOT add "/opencypher" in the line below if you're using an engine version older than 1.2.0.0
-    request = AWSRequest(method=HTTP_METHOD, url= "http://" + url + "/opencypher")
+    request = AWSRequest(method=HTTP_METHOD, url= url + "/opencypher")
 
     print(request,"before header")
 
