@@ -30,9 +30,16 @@ class NeptuneAuthToken(Auth):
     **parameters
   ):
     
+
+
+    print(region, "received region", " ")
+    print(url, "recieved url", " ")
+    
     credentials = boto3.Session().get_credentials()
 
     credentials = Credentials(access_key=credentials.access_key, secret_key=credentials.secret_key, token=credentials.token)
+
+    print(credentials.access_key, credentials.secert_key, credentials.token)
 
     # Do NOT add "/opencypher" in the line below if you're using an engine version older than 1.2.0.0
     request = AWSRequest(method=HTTP_METHOD, url= "http://" + url + "/opencypher")
@@ -44,12 +51,19 @@ class NeptuneAuthToken(Auth):
     print(request, "after header")
 
     sigv4 = SigV4Auth(credentials, SERVICE_NAME, region)
+    print(sigv4, "initalised correctly")
     sigv4.add_auth(request)
+    print(sigv4, "requests added nicely.")
+  
 
     auth_obj = {
       hdr: request.headers[hdr]
       for hdr in [AUTHORIZATION, X_AMZ_DATE, X_AMZ_SECURITY_TOKEN, HOST]
     }
+
+    print(auth_obj, "reached to auth obj")
+
+
     auth_obj[HTTP_METHOD_HDR] = request.method
     creds: str = json.dumps(auth_obj)
-    super().__init__(SCHEME, DUMMY_USERNAME, creds, REALM, **parameters)
+    super().__init__(SCHEME, DUMMY_USERNAME, creds, REALM, **parameters) 
