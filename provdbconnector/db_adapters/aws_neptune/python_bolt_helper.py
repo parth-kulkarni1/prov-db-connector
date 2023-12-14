@@ -39,7 +39,7 @@ class NeptuneAuthToken(Auth):
 
     credentials = Credentials(access_key=credentials.access_key, secret_key=credentials.secret_key, token=credentials.token)
 
-    print(credentials.access_key, credentials.secert_key, credentials.token)
+    print(credentials.access_key, credentials.secret_key, credentials.token)
 
     # Do NOT add "/opencypher" in the line below if you're using an engine version older than 1.2.0.0
     request = AWSRequest(method=HTTP_METHOD, url= url + "/opencypher")
