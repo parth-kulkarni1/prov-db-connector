@@ -2,7 +2,6 @@ import json
 
 from neo4j import Auth
 from botocore.awsrequest import AWSRequest
-from botocore.credentials import Credentials
 from botocore.auth import (
   SigV4Auth,
   _host_from_url,
@@ -23,6 +22,25 @@ HOST = "Host"
 
 
 class NeptuneAuthToken(Auth):
+
+
+  """
+    Provides authentication token for Amazon Neptune using AWS SigV4.
+
+    This class automates the creation of a signed authentication token required by Amazon Neptune
+    databases. It takes the AWS region and Neptune database URL, constructs an AWSRequest, and 
+    signs it using the SigV4 protocol with the credentials obtained from the boto3 session.
+
+    Arguments:
+        region (str): AWS region where the Neptune database is located.
+        url (str): URL of the Neptune database.
+        **parameters: Additional parameters for the parent Auth class.
+    
+    Note:
+        - This class is designed for Amazon Neptune databases compatible with engine version 1.2.0.0 or newer.
+        - Inherits from neo4j.Auth.
+  """
+
   def __init__(
     self,
     region: str,
@@ -30,39 +48,20 @@ class NeptuneAuthToken(Auth):
     **parameters
   ):
     
-
-
-    print(region, "received region", " ")
-    print(url, "recieved url", " ")
     
     credentials = boto3.Session().get_credentials()
 
-    credentials = Credentials(access_key=credentials.access_key, secret_key=credentials.secret_key, token=credentials.token)
-
-    print(credentials.access_key, credentials.secret_key, credentials.token)
-
     # Do NOT add "/opencypher" in the line below if you're using an engine version older than 1.2.0.0
     request = AWSRequest(method=HTTP_METHOD, url= url + "/opencypher")
-
-    print(request,"before header")
-
     request.headers.add_header("Host", _host_from_url(request.url))
 
-    print(request, "after header")
-
     sigv4 = SigV4Auth(credentials, SERVICE_NAME, region)
-    print(sigv4, "initalised correctly")
     sigv4.add_auth(request)
-    print(sigv4, "requests added nicely.")
   
-
     auth_obj = {
       hdr: request.headers[hdr]
       for hdr in [AUTHORIZATION, X_AMZ_DATE, X_AMZ_SECURITY_TOKEN, HOST]
     }
-
-    print(auth_obj, "reached to auth obj")
-
 
     auth_obj[HTTP_METHOD_HDR] = request.method
     creds: str = json.dumps(auth_obj)

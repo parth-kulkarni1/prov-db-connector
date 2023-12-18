@@ -18,10 +18,11 @@ from provdbconnector.utils.serializer import encode_string_value_to_primitive, e
     split_into_formal_and_other_attributes
 
 import logging
-import requests
-import boto3
+
+###Added Import###
 from provdbconnector.db_adapters.aws_neptune.python_bolt_helper import NeptuneAuthToken
-from botocore.credentials import Credentials
+######################
+
 
 
 logging.getLogger("neo4j.bolt").setLevel(logging.WARN)
@@ -81,8 +82,11 @@ class awsNeptuneAdapater(BaseAdapter):
                 # AWS neptune needs these options to sucessfully work.
                 raise InvalidOptionsException()
             
+
+            # Making an HTTP GET request to obtain an authentication token
             authToken = NeptuneAuthToken(region = region, url="http://{}".format(host))
 
+            # Connecting to the database using the BOLT protocol.
             self.driver = GraphDatabase.driver("bolt://{}".format(host), encrypted = encrypted, auth=authToken)
 
         except ConfigurationError as e:
